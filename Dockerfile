@@ -21,8 +21,6 @@ WORKDIR /dehydrated
 
 # Update CA certs, add bash, curl, openssl
 RUN apk --no-cache --update add bash ca-certificates curl openssl sudo && \
-	addgroup -S runner && \
-	adduser -S runner -G runner && \
 	mkdir -p hooks/duckdns
 
 COPY --from=build /src/dehydrated/dehydrated /dehydrated/
@@ -30,18 +28,23 @@ COPY --from=build /src/dehydrated/LICENSE /dehydrated/
 COPY --from=build /src/duckdns/hook.sh /dehydrated/hooks/duckdns/
 COPY --from=build /src/duckdns/LICENSE /dehydrated/hooks/duckdns/
 
-ADD --chown=runner:runner dehydrated /etc/periodic/daily/
+ADD dehydrated /etc/periodic/daily/
 
 RUN touch domains.txt && \
 	chmod +x /etc/periodic/daily/dehydrated && \
-	chown -R runner:runner . && \
+	chown -R nobody:nogroup . && \
 	rm -rf /var/cache/apk/* /tmp/* /var/tmp/
 
-ENV DUCKDNS_TOKEN=
 ENV DUCKDNS_TOKEN_FILE=
 ENV DOMAIN=
-ENV USER=runner
-
-CMD /etc/periodic/daily/dehydrated && crond -f
 
 VOLUME /dehydrated/certs
+VOLUME /dehydrated/accounts
+
+# make sure the docker volume mountpoints are writable
+CMD chmod ugo+w /dehydrated/certs && \
+	chmod ugo+w /dehydrated/accounts && \
+# run at start
+	/etc/periodic/daily/dehydrated && \
+# re-run daily
+	crond -f
