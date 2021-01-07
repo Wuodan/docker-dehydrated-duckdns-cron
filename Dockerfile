@@ -1,6 +1,6 @@
 FROM alpine:latest AS build
 
-ARG APP_VERSION=0.7.0
+ARG APP_VERSION=
 
 ADD https://github.com/dehydrated-io/dehydrated/releases/download/v$APP_VERSION/dehydrated-$APP_VERSION.tar.gz \
 	/src/dehydrated.tar.gz
