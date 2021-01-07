@@ -10,7 +10,7 @@ docker create \
   -e 'CF_KEY=API_key' \
   -e 'CF_HOST=host.domain.tld' \
   -v /path/to/certs:/dehydrated/certs \
-  ingram/dehydrated-cloudflare-cron
+  docker-dehydrated-duckdns-cron
 ```
 It is possible to generate one certificate containing alternative domains without resorting to creating `domains.txt` in the following manner:
 ```
@@ -25,7 +25,7 @@ docker create \
   -e 'CF_KEY=API_key' \
   -v /path/to/domains.txt:/dehydrated/domains.txt:ro \
   -v /path/to/certs:/dehydrated/certs \
-  ingram/dehydrated-cloudflare-cron
+  docker-dehydrated-duckdns-cron
 ```
 
 Then start container, which will run update script once at start and once daily after that:

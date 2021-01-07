@@ -1,13 +1,54 @@
 #!/bin/bash
 
+set -e
+
+# from mysql docker entrypoint.sh
+# https://github.com/docker-library/mysql/blob/master/5.7/docker-entrypoint.sh
+# usage: file_env VAR [DEFAULT]
+#    ie: file_env 'XYZ_DB_PASSWORD' 'example'
+# (will allow for "$XYZ_DB_PASSWORD_FILE" to fill in the value of
+#  "$XYZ_DB_PASSWORD" from a file, especially for Docker's secrets feature)
+file_env() {
+	local var="$1"
+	local fileVar="${var}_FILE"
+	local def="${2:-}"
+	if [ "${!var:-}" ] && [ "${!fileVar:-}" ]; then
+		echo >&2 "error: both $var and $fileVar are set (but are exclusive)"
+		exit 1
+	fi
+	local val="$def"
+	if [ "${!var:-}" ]; then
+		val="${!var}"
+	elif [ "${!fileVar:-}" ]; then
+		val="$(< "${!fileVar}")"
+	fi
+	export "$var"="$val"
+	unset "$fileVar"
+}
+
+# Initialize values that might be stored in a file
+file_env 'DUCKDNS_TOKEN'
+
 cd /dehydrated
 
-./dehydrated --register --accept-terms
+PARAMS='-c -t dns-01 -k hooks/duckdns/hook.sh'
 
-if [ -z $CF_HOST ]; then
-  ./dehydrated -c -t dns-01 -k 'hooks/cloudflare/hook.py'
+if [ -n "${DOMAIN}" ]; then
+	PARAMS+=" -d ${DOMAIN}"
+fi
+
+if [ -n "${USER}" ]; then
+	echo "run as $USER"
+	sudo -u "${USER}" \
+		DUCKDNS_TOKEN="${DUCKDNS_TOKEN}" \
+		./dehydrated --register --accept-terms
+	sudo -u "${USER}" \
+		DUCKDNS_TOKEN="${DUCKDNS_TOKEN}" \
+		./dehydrated ${PARAMS}
 else
-  ./dehydrated -c -d $CF_HOST -t dns-01 -k 'hooks/cloudflare/hook.py'
+	echo "run as root"
+	./dehydrated --register --accept-terms
+	./dehydrated ${PARAMS}
 fi
 
 chown -R nobody:nogroup certs
