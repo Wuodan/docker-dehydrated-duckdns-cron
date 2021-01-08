@@ -17,10 +17,15 @@ RUN cd /src && \
 
 FROM alpine:latest
 
+ARG DEBUG=
+
 WORKDIR /dehydrated
+
+ADD cmd.sh /dehydrated/
 
 # Update CA certs, add bash, curl, openssl
 RUN apk --no-cache --update add bash ca-certificates curl openssl sudo && \
+	chmod +x cmd.sh && \
 	mkdir -p hooks/duckdns
 
 COPY --from=build /src/dehydrated/dehydrated /dehydrated/
@@ -41,10 +46,4 @@ ENV DOMAIN=
 VOLUME /dehydrated/certs
 VOLUME /dehydrated/accounts
 
-# make sure the docker volume mountpoints are writable
-CMD chmod ugo+w /dehydrated/accounts && \
-	chmod ugo+w /dehydrated/certs && \
-# run at start
-	/etc/periodic/daily/dehydrated && \
-# re-run daily
-	crond -f
+CMD ./cmd.sh
