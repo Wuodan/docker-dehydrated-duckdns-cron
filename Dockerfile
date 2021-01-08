@@ -1,6 +1,6 @@
 FROM alpine:latest AS build
 
-ARG APP_VERSION=
+ARG APP_VERSION=0.7.0
 
 ADD https://github.com/dehydrated-io/dehydrated/releases/download/v$APP_VERSION/dehydrated-$APP_VERSION.tar.gz \
 	/src/dehydrated.tar.gz
@@ -42,8 +42,8 @@ VOLUME /dehydrated/certs
 VOLUME /dehydrated/accounts
 
 # make sure the docker volume mountpoints are writable
-CMD chmod ugo+w /dehydrated/certs && \
-	chmod ugo+w /dehydrated/accounts && \
+CMD chmod ugo+w /dehydrated/accounts && \
+	chmod ugo+w /dehydrated/certs && \
 # run at start
 	/etc/periodic/daily/dehydrated && \
 # re-run daily

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -eu
+set -e
 
 # Initialize value stored in a file
 DUCKDNS_TOKEN="$(< "${DUCKDNS_TOKEN_FILE}")"
