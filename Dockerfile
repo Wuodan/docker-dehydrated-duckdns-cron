@@ -25,7 +25,7 @@ ADD cmd.sh /dehydrated/
 
 # Update CA certs, add bash, curl, openssl
 RUN apk --no-cache --update add bash ca-certificates curl openssl sudo && \
-	chmod +x cmd.sh && \
+	chmod ugo+x cmd.sh && \
 	mkdir -p hooks/duckdns
 
 COPY --from=build /src/dehydrated/dehydrated /dehydrated/
