@@ -7,15 +7,17 @@ DUCKDNS_TOKEN="$(< "${DUCKDNS_TOKEN_FILE}")"
 
 cd /dehydrated
 
-PARAMS='-c -t dns-01 -k hooks/duckdns/hook.sh'
-
-if [ -n "${DOMAIN}" ]; then
-	PARAMS+=" -d '${DOMAIN}'"
-fi
-
 sudo -u nobody \
 	DUCKDNS_TOKEN="${DUCKDNS_TOKEN}" \
 	./dehydrated --register --accept-terms
-sudo -u nobody \
-	DUCKDNS_TOKEN="${DUCKDNS_TOKEN}" \
-	./dehydrated ${PARAMS}
+
+if [ -n "${DOMAIN}" ]; then
+	sudo -u nobody \
+		DUCKDNS_TOKEN="${DUCKDNS_TOKEN}" \
+		./dehydrated -c -t dns-01 -k hooks/duckdns/hook.sh -d "${DOMAIN}"
+else
+	sudo -u nobody \
+		DUCKDNS_TOKEN="${DUCKDNS_TOKEN}" \
+		./dehydrated -c -t dns-01 -k hooks/duckdns/hook.sh
+fi
+
