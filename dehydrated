@@ -10,7 +10,7 @@ cd /dehydrated
 PARAMS='-c -t dns-01 -k hooks/duckdns/hook.sh'
 
 if [ -n "${DOMAIN}" ]; then
-	PARAMS+=" -d ${DOMAIN}"
+	PARAMS+=" -d '${DOMAIN}'"
 fi
 
 sudo -u nobody \
